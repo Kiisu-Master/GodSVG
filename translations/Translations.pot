@@ -176,7 +176,7 @@ msgstr ""
 
 #: src/SVG.gd
 msgid ""
-"The file couldn\'t be opened.\n"
+"The file couldn't be opened.\n"
 "Try checking the file path, ensure that the file is not deleted, or choose a different file."
 msgstr ""
 
