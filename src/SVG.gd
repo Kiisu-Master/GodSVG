@@ -131,14 +131,17 @@ func apply_svg_from_path(path: String) -> int:
 	GlobalSettings.modify_save_data(&"last_used_dir", path.get_base_dir())
 	
 	if extension.is_empty():
-		error = "The file extension is empty. Only \"svg\" files are supported."
+		error = tr(&"The file extension is empty. Only \"svg\" files are supported.")
 	elif extension == "tscn":
 		return ERR_FILE_CANT_OPEN
 	elif extension != "svg":
-		error = tr(
-				&"\"{passed_extension}\" is a unsupported file extension. Only \"svg\" files are supported.").format({"passed_extension": extension})
+		error = (
+			tr(&"\"{passed_extension}\" is a unsupported file extension. Only \"svg\" files are supported.").format({"passed_extension": extension})
+		)
 	elif svg_file == null:
-		error = "The file couldn't be opened.\nTry checking the file path, ensure that the file is not deleted, or choose a different file."
+		error = (
+			tr(&"The file couldn't be opened.\nTry checking the file path, ensure that the file is not deleted, or choose a different file.")
+		)
 	
 	if not error.is_empty():
 		var alert_dialog := AlertDialog.instantiate()

@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://bktmk76u7dsu0"]
 
 [ext_resource type="Script" path="res://src/ui_parts/root_tag_editor.gd" id="1_xgyg0"]
-[ext_resource type="FontFile" uid="uid://dtb4wkus51hxs" path="res://visual/fonts/FontMono.ttf" id="2_fm5sa"]
+[ext_resource type="FontFile" uid="uid://cvv5ubcbtfhfp" path="res://visual/fonts/FontMono.ttf" id="2_fm5sa"]
 [ext_resource type="PackedScene" uid="uid://dad7fkhmsooc6" path="res://src/ui_elements/number_edit.tscn" id="3_1gu7n"]
 [ext_resource type="Texture2D" uid="uid://bv4lcvienlyfa" path="res://visual/icons/Coupled.svg" id="3_yhfll"]
 [ext_resource type="Script" path="res://src/ui_elements/BetterToggleButton.gd" id="4_7r848"]
@@ -37,6 +37,7 @@ theme_override_constants/separation = 0
 [node name="WidthButton" type="Button" parent="Edits/Size/Width"]
 layout_mode = 2
 size_flags_horizontal = 4
+auto_translate = false
 focus_mode = 0
 theme_type_variation = &"TextButton"
 theme_override_fonts/font = ExtResource("2_fm5sa")
@@ -58,6 +59,7 @@ theme_override_constants/separation = 0
 [node name="HeightButton" type="Button" parent="Edits/Size/Height"]
 layout_mode = 2
 size_flags_horizontal = 4
+auto_translate = false
 focus_mode = 0
 theme_type_variation = &"TextButton"
 theme_override_fonts/font = ExtResource("2_fm5sa")
@@ -92,6 +94,7 @@ theme_override_constants/separation = 0
 [node name="ViewboxButton" type="Button" parent="Edits/Viewbox"]
 layout_mode = 2
 size_flags_horizontal = 4
+auto_translate = false
 focus_mode = 0
 theme_type_variation = &"TextButton"
 theme_override_fonts/font = ExtResource("2_fm5sa")

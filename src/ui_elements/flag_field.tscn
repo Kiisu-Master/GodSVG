@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://br8g7w38jguh4"]
 
-[ext_resource type="FontFile" uid="uid://dtb4wkus51hxs" path="res://visual/fonts/FontMono.ttf" id="1_p8s8y"]
+[ext_resource type="FontFile" uid="uid://cvv5ubcbtfhfp" path="res://visual/fonts/FontMono.ttf" id="1_p8s8y"]
 [ext_resource type="Script" path="res://src/ui_elements/flag_field.gd" id="2_0bhg4"]
 
 [sub_resource type="FontVariation" id="FontVariation_46ud6"]
@@ -34,6 +34,7 @@ corner_radius_top_right = 3
 custom_minimum_size = Vector2(0, 18)
 offset_right = 19.0
 offset_bottom = 18.0
+auto_translate = false
 focus_mode = 0
 mouse_filter = 1
 mouse_default_cursor_shape = 2

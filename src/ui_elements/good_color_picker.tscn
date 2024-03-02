@@ -148,6 +148,7 @@ size_flags_horizontal = 3
 [node name="RGB" type="Button" parent="SliderContainer/ColorSpaceContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+auto_translate = false
 focus_mode = 0
 mouse_default_cursor_shape = 2
 theme_override_colors/font_disabled_color = Color(0.866667, 0.933333, 1, 1)
@@ -162,6 +163,7 @@ text = "RGB"
 [node name="HSV" type="Button" parent="SliderContainer/ColorSpaceContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+auto_translate = false
 focus_mode = 0
 mouse_default_cursor_shape = 2
 theme_override_colors/font_disabled_color = Color(0.866667, 0.933333, 1, 1)

@@ -215,3 +215,7 @@ static func get_last_dir() -> String:
 		return OS.get_system_dir(OS.SYSTEM_DIR_PICTURES)
 	else:
 		return GlobalSettings.save_data.last_used_dir
+
+# Mark as translatable
+static func mtr(s: StringName) -> StringName:
+	return s
