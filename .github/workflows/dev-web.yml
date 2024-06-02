@@ -1,0 +1,43 @@
+name: dev-web
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+
+env:
+  GODOT_VERSION: 4.2.2
+  GODOT_RELEASE: rc3
+  PROJECT_NAME: GodSVG
+
+
+jobs:
+  export-web:
+    name: Export GodSVG for web and publish.
+    runs-on: ubuntu-latest
+    env:
+        PLATFORM: "Web"
+        EXTENSION: "html"
+        BUILD_NAME: "web"
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Set up Godot
+        uses: ./.github/actions/set-up-godot
+      - name: Export project
+        uses: ./.github/actions/godot-export
+      - name: Finish up Web build.
+        run: |
+          cd ~/build/${BUILD_NAME}/
+          # Rename main html file to index.html so browsers can find it.
+          mv ${PROJECT_NAME}.html index.html
+          # Add service worker so project loads on github pages. This can maybe be removed when switch to Godot 4.3.
+          wget https://github.com/gzuidhof/coi-serviceworker/raw/master/coi-serviceworker.js
+          # This adds the line in index.html that loads the service worker script. It does that by first finding the main script tag and adding to it.
+          sed -i 's#\(		<script src="${{ env.PROJECT_NAME }}.js"></script>\)#		<script src="coi-serviceworker.js"></script>\n\1#g' index.html
+      - name: Publish on Github pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ~/build/${{ env.BUILD_NAME }}
+          target-folder: dev
