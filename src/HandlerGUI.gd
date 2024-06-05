@@ -333,18 +333,8 @@ func _calculate_auto_scale() -> float:
 # https://github.com/Orama-Interactive/Pixelorama/blob/master/src/Autoload/HTML5FileExchange.gd
 
 func web_load_svg() -> void:
-	JavaScriptBridge.eval("upload_svg();", true)  # Open file dialog.
-	await _in_focus  # Wait until dialog closed.
-	await get_tree().create_timer(1.5).timeout  # Give some time for async JS data load.
-	if JavaScriptBridge.eval("canceled;", true):
-		return
-	var file_data: Variant
-	while true:
-		file_data = JavaScriptBridge.eval("fileData;", true)
-		if file_data != null:
-			break
-		await get_tree().create_timer(0.5).timeout
-	
+	var file_data = await upload_file(".svg")
+	file_data = file_data.get_string_from_utf8()
 	var file_name: String = JavaScriptBridge.eval("fileName;", true)
 	var extension := file_name.get_extension()
 	if extension == "svg":
@@ -362,13 +352,25 @@ func web_load_svg() -> void:
 			alert_dialog.setup(TranslationServer.translate(
 					"\"{passed_extension}\" is a unsupported file extension. Only \"svg\" files are supported.").format({"passed_extension": extension}))
 
+func upload_file(type: String) -> PackedByteArray:
+	JavaScriptBridge.eval('upload("");', true)  # Open file dialog.
+	await _in_focus  # Wait until dialog closed.
+	await get_tree().create_timer(1.5).timeout  # Give some time for async JS data load.
+	if JavaScriptBridge.eval("canceled;", true):
+		return []
+	var file_data: Variant
+	while true:
+		file_data = JavaScriptBridge.eval("fileData;", true)
+		if file_data != null:
+			break
+		await get_tree().create_timer(0.5).timeout
+	return file_data as PackedByteArray
 
 const web_glue = """var fileData;
 var fileName;
 var canceled;
 var input = document.createElement('INPUT');
 input.setAttribute("type", "file");
-input.setAttribute("accept", ".svg");
 input.addEventListener('change', event => {
 	if (event.target.files.length == 0) {
 		return;
@@ -377,7 +379,7 @@ input.addEventListener('change', event => {
 	var file = event.target.files[0];
 	var reader = new FileReader();
 	fileName = file.name;
-	reader.readAsText(file);
+	reader.readAsArrayBuffer(file);
 	reader.onloadend = function(evt) {
 		if (evt.target.readyState == FileReader.DONE) {
 			fileData = evt.target.result;
@@ -385,7 +387,8 @@ input.addEventListener('change', event => {
 	}
 });
 
-function upload_svg() {
+function upload(filetype) {
+	input.setAttribute("accept", filetype);
 	canceled = true;
 	input.click();
 };
