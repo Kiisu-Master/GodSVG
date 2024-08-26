@@ -65,7 +65,7 @@ jobs:
           cd godot
           scons p=linuxbsd arch=x86_64 optimize=speed ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
-          mv .bin/godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
+          mv ./bin/godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
       - name: Build Godot (Windows)
         if: matrix.platform == 'windows'
         run: |
