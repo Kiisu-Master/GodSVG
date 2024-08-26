@@ -48,7 +48,7 @@ jobs:
       - name: Set up Godot editor
         run: |
           mkdir -v -p ~/godot-editor
-          cd godot-editor
+          cd ~/godot-editor
           if [ $RUNNER_OS == 'Linux' ]; then
             wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
             unzip Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip -d ~
