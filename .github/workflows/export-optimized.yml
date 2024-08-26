@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ env.GODOT_REPO }}
-          ref: ${{ env.GODOT_COMMIT_HASH }}
+          ref: ${{ env.GODOT_VERSION }}
           path: godot
       - name: Build Godot (Linux)
         if: matrix.platform == 'linux'
