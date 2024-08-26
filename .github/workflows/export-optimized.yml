@@ -23,14 +23,14 @@ jobs:
             os: ubuntu-latest
             preset: "Linux/X11"
             artifact: GodSVG.x86_64
-          # - platform: windows
-          #   os: ubuntu-latest
-          #   preset: "Windows Desktop"
-          #   artifact: GodSVG.exe
-          # - platform: macos
-          #   os: macos-latest
-          #   preset: "macOS"
-          #   artifact: GodSVG.zip
+          - platform: windows
+            os: ubuntu-latest
+            preset: "Windows Desktop"
+            artifact: GodSVG.exe
+          - platform: macos
+            os: macos-latest
+            preset: "macOS"
+            artifact: GodSVG.zip
     
     steps:
       - name: Checkout repository
