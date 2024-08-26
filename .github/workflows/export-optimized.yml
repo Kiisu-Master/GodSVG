@@ -45,7 +45,7 @@ jobs:
           fi
       - name: Set up Godot editor
         if: matrix.os == 'ubuntu-latest'
-        uses: ./actions/set-up-editor
+        uses: ./github/actions/set-up-editor
         with:
           godot-version: ${{ env.GODOT_VERSION }}
           godot-release: ${{ env.GODOT_RELEASE }}
