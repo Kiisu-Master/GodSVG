@@ -35,6 +35,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          path: godsvg
       - name: Install dependencies (Linux/Windows)
         if: matrix.platform == 'linux' || matrix.platform == 'windows'
         run: |
@@ -57,11 +59,12 @@ jobs:
         with:
           repository: ${{ env.GODOT_REPO }}
           ref: ${{ env.GODOT_COMMIT_HASH }}
+          path: godot
       - name: Build Godot (Linux)
         if: matrix.platform == 'linux'
         run: |
           ls
-          ls ../
+          cd godot
           scons p=linuxbsd arch=x86_64 optimize=speed ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
           mv ./bin/godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/linux_release.x86_64
@@ -69,12 +72,14 @@ jobs:
       - name: Build Godot (Windows)
         if: matrix.platform == 'windows'
         run: |
+          cd godot
           scons p=windows target=template_release tools=no ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
           mv ./bin/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
       - name: Build Godot (macOS)
         if: matrix.platform == 'macos'
         run: |
+          cd godot
           scons p=macos arch=arm64 optimize=speed ${BUILD_OPTIONS}
           scons p=macos arch=x86_64 optimize=speed ${BUILD_OPTIONS}
           cd bin
@@ -83,6 +88,7 @@ jobs:
           mv godot.macos.template_release.universal "/Users/runner/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}"
       - name: Export project
         run: |
+          cd godsvg
           mkdir -p build
           if [ "${{ matrix.platform }}" = "linux" ]; then
             godot --headless --export-release "${{ matrix.preset }}" build/${{ matrix.artifact }}
