@@ -51,12 +51,12 @@ jobs:
           cd ~/godot-editor
           if [ $RUNNER_OS == 'Linux' ]; then
             wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
-            unzip Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip -d ~
-            mv ./Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64 ./godot.x86_64
+            unzip Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
+            mv Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64 ./godot.x86_64
             echo "~/godot-editor/" >> $GITHUB_PATH
           elif [ $RUNNER_OS == 'macOS' ]; then
             wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
-            unzip -a Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip -d ~
+            unzip -a Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
           fi
       - name: Install dependencies (macOS)
         if: matrix.platform == 'macos'
