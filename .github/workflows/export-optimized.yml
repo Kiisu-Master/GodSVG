@@ -46,11 +46,17 @@ jobs:
             sudo apt install -y g++-mingw-w64-x86-64-posix wine64
           fi
       - name: Set up Godot editor
-        if: matrix.os == 'ubuntu-latest'
-        uses: ./godsvg/.github/actions/set-up-editor
-        with:
-          godot-version: ${{ env.GODOT_VERSION }}
-          godot-release: ${{ env.GODOT_RELEASE }}
+        run: |
+          mkdir -v -p ~/godot-editor
+          cd godot-editor
+          if [ $RUNNER_OS == 'Linux' ]; then
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
+            unzip Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip -d ~
+            echo "~/godot-editor" >> $GITHUB_PATH
+          elif [ $RUNNER_OS == 'macOS' ]; then
+            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
+            unzip -a Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip -d ~
+          fi
       - name: Install dependencies (macOS)
         if: matrix.platform == 'macos'
         run: brew install scons
@@ -101,6 +107,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PROJECT_NAME }}-${{ matrix.platform }}
-          path: build/${{ matrix.artifact }}
+          path: godsvg/build/${{ matrix.artifact }}
           if-no-files-found: error
           retention-days: 28
