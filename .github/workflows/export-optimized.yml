@@ -64,14 +64,15 @@ jobs:
         run: |
           cd godot
           scons p=linuxbsd arch=x86_64 optimize=speed ${BUILD_OPTIONS}
-          mkdir -v -p ~/.local/share/godot/export_templates/${ GODOT_VERSION }.${ GODOT_RELEASE }
-          mv godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${ GODOT_RELEASE }
+          mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
+          mv godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
       - name: Build Godot (Windows)
         if: matrix.platform == 'windows'
         run: |
           cd godot
           scons p=windows target=template_release tools=no ${BUILD_OPTIONS}
-          mv ./bin/godot.windows.template_release.x86_64.exe ~/.local/share/godot/export_templates/${GODOT_VERSION}.${ GODOT_RELEASE }
+          mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
+          mv ./bin/godot.windows.template_release.x86_64.exe ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}
       - name: Build Godot (macOS)
         if: matrix.platform == 'macos'
         run: |
@@ -81,7 +82,7 @@ jobs:
           cd bin
           lipo -create godot.macos.template_release.x86_64 godot.macos.template_release.arm64 -output godot.macos.template_release.universal
           chmod +x *
-          mv godot.macos.template_release.universal /Users/runner/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.${ GODOT_RELEASE }
+          mv godot.macos.template_release.universal /Users/runner/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}
       - name: Export project
         run: |
           mkdir -p build
