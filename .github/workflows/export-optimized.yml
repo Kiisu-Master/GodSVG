@@ -9,7 +9,7 @@ env:
   GODOT_VERSION: 4.3
   GODOT_RELEASE: stable
   PROJECT_NAME: GodSVG
-  GODOT_REPO: https://github.com/godotengine/godot.git
+  GODOT_REPO: godotengine/godot
   GODOT_COMMIT_HASH: 77dcf97
   BUILD_OPTIONS: target=template_release lto=full production=yes deprecated=no minizip=no brotli=no vulkan=no openxr=no use_volk=no disable_3d=yes modules_enabled_by_default=no module_freetype_enabled=yes module_gdscript_enabled=yes module_svg_enabled=yes module_jpg_enabled=yes module_text_server_adv_enabled=yes graphite=no module_webp_enabled=yes
 jobs:
@@ -34,7 +34,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install dependencies (Linux/Windows)
         if: matrix.platform == 'linux' || matrix.platform == 'windows'
         run: |
@@ -52,17 +52,16 @@ jobs:
       - name: Install dependencies (macOS)
         if: matrix.platform == 'macos'
         run: brew install scons
-      - name: Clone Godot repository
-        run: git clone $GODOT_REPO godot
-      - name: Checkout specific commit
-        run: |
-          cd godot
-          git fetch
-          git checkout $GODOT_COMMIT_HASH
+      - name: Get Godot source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.GODOT_REPO }}
+          ref: ${{ env.GODOT_COMMIT_HASH }}
       - name: Build Godot (Linux)
         if: matrix.platform == 'linux'
         run: |
-          cd godot
+          ls
+          ls ../
           scons p=linuxbsd arch=x86_64 optimize=speed ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
           mv ./bin/godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/linux_release.x86_64
@@ -70,14 +69,12 @@ jobs:
       - name: Build Godot (Windows)
         if: matrix.platform == 'windows'
         run: |
-          cd godot
           scons p=windows target=template_release tools=no ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
           mv ./bin/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
       - name: Build Godot (macOS)
         if: matrix.platform == 'macos'
         run: |
-          cd godot
           scons p=macos arch=arm64 optimize=speed ${BUILD_OPTIONS}
           scons p=macos arch=x86_64 optimize=speed ${BUILD_OPTIONS}
           cd bin
