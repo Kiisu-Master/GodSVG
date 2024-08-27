@@ -27,7 +27,7 @@ jobs:
           - platform: windows
             os: ubuntu-latest
             preset: "Windows Desktop"
-          #   artifact: GodSVG.exe
+            artifact: GodSVG.exe
           # - platform: macos
           #   os: macos-latest
           #   preset: "macOS"
