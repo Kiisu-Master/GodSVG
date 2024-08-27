@@ -7,6 +7,7 @@ on:
   workflow_dispatch: 
 env:
   GODOT_VERSION: 4.3
+  GODOT_FEATURE_VERSION: 4.3
   GODOT_RELEASE: stable
   PROJECT_NAME: GodSVG
   GODOT_REPO: godotengine/godot
@@ -23,9 +24,9 @@ jobs:
             os: ubuntu-latest
             preset: "Linux/X11"
             artifact: GodSVG.x86_64
-          # - platform: windows
-          #   os: ubuntu-latest
-          #   preset: "Windows Desktop"
+          - platform: windows
+            os: ubuntu-latest
+            preset: "Windows Desktop"
           #   artifact: GodSVG.exe
           # - platform: macos
           #   os: macos-latest
@@ -37,14 +38,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: godsvg
-      - name: Install dependencies (Linux/Windows)
-        if: matrix.platform == 'linux' || matrix.platform == 'windows'
-        run: |
-          sudo apt update
-          sudo apt install -y scons python3
-          if [ "${{ matrix.platform }}" = "windows" ]; then
-            sudo apt install -y g++-mingw-w64-x86-64-posix wine64
-          fi
       - name: Set up Godot editor
         run: |
           mkdir -v -p ~/godot-editor
@@ -58,6 +51,21 @@ jobs:
             wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
             unzip -a Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
           fi
+          godot --help
+      - name: Install dependencies (Linux/Windows)
+        if: matrix.platform == 'linux' || matrix.platform == 'windows'
+        run: |
+          sudo apt update
+          sudo apt install -y scons python3
+          if [ "${{ matrix.platform }}" = "windows" ]; then
+            sudo apt install -y g++-mingw-w64-x86-64-posix wine64
+            wget -q https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe
+            mkdir -v -p ~/.local/share/rcedit
+            mv rcedit-x64.exe ~/.local/share/rcedit
+            godot --headless --quit
+            echo 'export/windows/wine = "/usr/bin/wine64"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
+            echo 'export/windows/rcedit = "/home/runner/.local/share/rcedit/rcedit-x64.exe"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
+          fi
       - name: Install dependencies (macOS)
         if: matrix.platform == 'macos'
         run: brew install scons
@@ -67,25 +75,30 @@ jobs:
           repository: ${{ env.GODOT_REPO }}
           ref: ${{ env.GODOT_VERSION }}
           path: godot
+      - name: Use cache
+        id: godot-template-cache
+        uses:
+          actions/cache@v4
+        with:
+          key: ${{ env.GODOT_COMMIT_HASH }}-${{ matrix.platform}}-${{ env.BUILD_OPTIONS }}
+          path: |
+            godot/bin
       - name: Build Godot (Linux)
-        if: matrix.platform == 'linux'
+        if: ${{ matrix.platform == 'linux' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
         run: |
-          godot --help
-          ls
           cd godot
           scons p=linuxbsd arch=x86_64 optimize=speed ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
           mv ./bin/godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/linux_release.x86_64
-          ls ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
       - name: Build Godot (Windows)
-        if: matrix.platform == 'windows'
+        if: ${{ matrix.platform == 'windows' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
         run: |
           cd godot
           scons p=windows target=template_release tools=no ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
           mv ./bin/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
       - name: Build Godot (macOS)
-        if: matrix.platform == 'macos'
+        if: ${{ matrix.platform == 'macos' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
         run: |
           cd godot
           scons p=macos arch=arm64 optimize=speed ${BUILD_OPTIONS}
