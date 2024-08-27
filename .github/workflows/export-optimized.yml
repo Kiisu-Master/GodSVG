@@ -81,7 +81,7 @@ jobs:
         with:
           key: ${{ env.GODOT_COMMIT_HASH }}-${{ matrix.platform}}-${{ env.BUILD_OPTIONS }}
           path: |
-            ${{ github.workspace }}/godot/bin
+            ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.${{ env.GODOT_RELEASE }}
       - name: Build Godot (Linux)
         if: ${{ matrix.platform == 'linux' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
         run: |
