@@ -69,13 +69,7 @@ jobs:
       - name: Install dependencies (macOS)
         if: matrix.platform == 'macos'
         run: brew install scons
-      - name: Get Godot source
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.GODOT_REPO }}
-          ref: ${{ env.GODOT_VERSION }}
-          path: godot
-      - name: Use cache
+      - name: Use cached export template
         id: godot-template-cache
         uses:
           actions/cache@v4
@@ -83,6 +77,13 @@ jobs:
           key: ${{ env.GODOT_COMMIT_HASH }}-${{ matrix.platform}}-${{ env.BUILD_OPTIONS }}
           path: |
             ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.${{ env.GODOT_RELEASE }}
+      - name: Get Godot source
+        if: ${{ steps.godot-template-cache.outputs.cache-hit != 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.GODOT_REPO }}
+          ref: ${{ env.GODOT_COMMIT_HASH }}
+          path: godot
       - name: Build Godot (Linux)
         if: ${{ matrix.platform == 'linux' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
         run: |
