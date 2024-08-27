@@ -114,14 +114,9 @@ jobs:
         run: |
           cd godsvg
           ls ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
-          mkdir -p build
-          if [ "${{ matrix.platform }}" = "linux" ]; then
-            godot --headless --export-release "${{ matrix.preset }}" build/${{ matrix.artifact }}
-          elif [ "${{ matrix.platform }}" = "windows" ]; then
-            godot --headless --export-release "${{ matrix.preset }}" build/${{ matrix.artifact }}
-          elif [ "${{ matrix.platform }}" = "macos" ]; then
-            godot --headless --export-release "${{ matrix.preset }}" build/${{ matrix.artifact }}
-          fi
+          mkdir -v -p build
+          godot --headless --export-release "${{ matrix.preset }}" build/${{ matrix.artifact }}
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
