@@ -51,7 +51,6 @@ jobs:
             wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
             unzip -a Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
           fi
-          godot --help
       - name: Install dependencies (Linux/Windows)
         if: matrix.platform == 'linux' || matrix.platform == 'windows'
         run: |
@@ -86,6 +85,7 @@ jobs:
       - name: Build Godot (Linux)
         if: ${{ matrix.platform == 'linux' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
         run: |
+          godot --help
           cd godot
           scons p=linuxbsd arch=x86_64 optimize=speed ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
@@ -93,6 +93,7 @@ jobs:
       - name: Build Godot (Windows)
         if: ${{ matrix.platform == 'windows' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
         run: |
+          godot --help
           cd godot
           scons p=windows target=template_release tools=no ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
