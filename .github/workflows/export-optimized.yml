@@ -58,13 +58,13 @@ jobs:
           sudo apt install -y scons python3
           if [ "${{ matrix.platform }}" = "windows" ]; then
             sudo apt install -y g++-mingw-w64-x86-64-posix
-            sudo apt install -y --fix-missing wine64
-            wget -q https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe
-            mkdir -v -p ~/.local/share/rcedit
-            mv rcedit-x64.exe ~/.local/share/rcedit
-            godot --headless --quit
-            echo 'export/windows/wine = "/usr/bin/wine64"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
-            echo 'export/windows/rcedit = "/home/runner/.local/share/rcedit/rcedit-x64.exe"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
+            # sudo apt install -y --fix-missing wine64
+            # wget -q https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe
+            # mkdir -v -p ~/.local/share/rcedit
+            # mv rcedit-x64.exe ~/.local/share/rcedit
+            # godot --headless --quit
+            # echo 'export/windows/wine = "/usr/bin/wine64"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
+            # echo 'export/windows/rcedit = "/home/runner/.local/share/rcedit/rcedit-x64.exe"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
           fi
       - name: Install dependencies (macOS)
         if: matrix.platform == 'macos'
@@ -113,6 +113,7 @@ jobs:
       - name: Export project
         run: |
           cd godsvg
+          ls ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
           mkdir -p build
           if [ "${{ matrix.platform }}" = "linux" ]; then
             godot --headless --export-release "${{ matrix.preset }}" build/${{ matrix.artifact }}
