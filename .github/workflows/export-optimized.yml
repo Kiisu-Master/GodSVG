@@ -81,7 +81,7 @@ jobs:
         with:
           key: ${{ env.GODOT_COMMIT_HASH }}-${{ matrix.platform}}-${{ env.BUILD_OPTIONS }}
           path: |
-            godot/bin
+            ${{ github.workspace }}/godot/bin
       - name: Build Godot (Linux)
         if: ${{ matrix.platform == 'linux' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
         run: |
@@ -97,7 +97,7 @@ jobs:
           cd godot
           scons p=windows target=template_release tools=no ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
-          mv ./bin/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
+          mv ./bin/godot.windows.template_release.x86_64.exe ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
       - name: Build Godot (macOS)
         if: ${{ matrix.platform == 'macos' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
         run: |
