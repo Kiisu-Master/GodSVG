@@ -113,7 +113,7 @@ jobs:
           godot --help
           cd godot
           ls ../angle_libs
-          scons p=windows arch=x86_64 angle_libs=../angle_libs ${BUILD_OPTIONS}
+          scons p=windows use_mingw=yes arch=x86_64 angle_libs=../angle_libs ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
           mv ./bin/godot.windows.template_release.x86_64.exe ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
       - name: Build Godot (macOS)
