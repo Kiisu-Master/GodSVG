@@ -50,6 +50,7 @@ jobs:
           elif [ $RUNNER_OS == 'macOS' ]; then
             wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
             unzip -a Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
+            echo "~/godot-editor/Godot.app/Contents/MacOS" >> $GITHUB_PATH
           fi
       - name: Install dependencies (Linux/Windows)
         if: matrix.platform == 'linux' || matrix.platform == 'windows'
@@ -65,6 +66,12 @@ jobs:
             godot --headless --quit
             echo 'export/windows/wine = "/usr/bin/wine64"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
             echo 'export/windows/rcedit = "/home/runner/.local/share/rcedit/rcedit-x64.exe"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
+            mkdir -v -p angle_libs
+            pushd angle_libs
+            wget -q https://github.com/godotengine/godot-angle-static/releases/download/chromium%2F6601.2/godot-angle-static-x86_64-gcc-release.zip -O windows_x86_64.zip
+            unzip -o windows_x86_64.zip
+            rm -f windows_x86_64.zip
+            popd
           fi
       - name: Install dependencies (macOS)
         if: matrix.platform == 'macos'
@@ -97,12 +104,13 @@ jobs:
         run: |
           godot --help
           cd godot
-          scons p=windows arch=x86_64 ${BUILD_OPTIONS}
+          scons p=windows arch=x86_64 angle_libs= ../angle_libs ${BUILD_OPTIONS}
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
           mv ./bin/godot.windows.template_release.x86_64.exe ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
       - name: Build Godot (macOS)
         if: ${{ matrix.platform == 'macos' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
         run: |
+          godot --help
           cd godot
           scons p=macos arch=arm64 optimize=speed ${BUILD_OPTIONS}
           scons p=macos arch=x86_64 optimize=speed ${BUILD_OPTIONS}
