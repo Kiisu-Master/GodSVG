@@ -52,12 +52,18 @@ jobs:
             unzip -a Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
             echo "~/godot-editor/Godot.app/Contents/MacOS" >> $GITHUB_PATH
           fi
-      - name: Install dependencies (Linux/Windows)
-        if: matrix.platform == 'linux' || matrix.platform == 'windows'
+      - name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install -y scons python3
-          if [ "${{ matrix.platform }}" = "windows" ]; then
+          if ["${{ matrix.platform }}" = "macos"]; then
+            brew install scons
+          fi
+
+          if ["${{ matrix.platform }}" = "windows"] || ["${{ matrix.platform }}" = "linux"]; then
+            sudo apt update
+            sudo apt install -y scons python3
+          fi
+
+          if ["${{ matrix.platform }}" = "windows"]; then
             sudo apt install -y g++-mingw-w64-x86-64-posix
             sudo apt install -y --fix-missing wine64
             wget -q https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe
@@ -66,24 +72,25 @@ jobs:
             godot --headless --quit
             echo 'export/windows/wine = "/usr/bin/wine64"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
             echo 'export/windows/rcedit = "/home/runner/.local/share/rcedit/rcedit-x64.exe"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
-            mkdir -v -p angle_libs
-            pushd angle_libs
-            base_url=https://github.com/godotengine/godot-angle-static/releases/download/chromium%2F6601.2/godot-angle-static
-            curl -L -o windows_arm64.zip $base_url-arm64-llvm-release.zip
-            curl -L -o windows_x86_64.zip $base_url-x86_64-gcc-release.zip
-            curl -L -o windows_x86_32.zip $base_url-x86_32-gcc-release.zip
-            curl -L -o macos_arm64.zip $base_url-arm64-macos-release.zip
-            curl -L -o macos_x86_64.zip $base_url-x86_64-macos-release.zip
-            unzip -o windows_arm64.zip && rm -f windows_arm64.zip
-            unzip -o windows_x86_64.zip && rm -f windows_x86_64.zip
-            unzip -o windows_x86_32.zip && rm -f windows_x86_32.zip
-            unzip -o macos_arm64.zip && rm -f macos_arm64.zip
-            unzip -o macos_x86_64.zip && rm -f macos_x86_64.zip
-            popd
           fi
-      - name: Install dependencies (macOS)
-        if: matrix.platform == 'macos'
-        run: brew install scons
+
+          # TODO: Compile with angle libs
+          # if ["${{ matrix.platform }}" = "windows"] || ["${{ matrix.platform }}" = "macos"]; then
+          #   mkdir -p angle_libs
+          #   pushd angle_libs
+          #   base_url=https://github.com/godotengine/godot-angle-static/releases/download/chromium%2F6601.2/godot-angle-static
+          #   curl -L -o windows_arm64.zip $base_url-arm64-llvm-release.zip
+          #   curl -L -o windows_x86_64.zip $base_url-x86_64-gcc-release.zip
+          #   curl -L -o windows_x86_32.zip $base_url-x86_32-gcc-release.zip
+          #   curl -L -o macos_arm64.zip $base_url-arm64-macos-release.zip
+          #   curl -L -o macos_x86_64.zip $base_url-x86_64-macos-release.zip
+          #   unzip -o windows_arm64.zip && rm -f windows_arm64.zip
+          #   unzip -o windows_x86_64.zip && rm -f windows_x86_64.zip
+          #   unzip -o windows_x86_32.zip && rm -f windows_x86_32.zip
+          #   unzip -o macos_arm64.zip && rm -f macos_arm64.zip
+          #   unzip -o macos_x86_64.zip && rm -f macos_x86_64.zip
+          #   popd
+          # fi
       - name: Use cached export template
         id: godot-template-cache
         uses:
@@ -99,41 +106,35 @@ jobs:
           repository: ${{ env.GODOT_REPO }}
           ref: ${{ env.GODOT_VERSION }}
           path: godot
-      - name: Build Godot (Linux)
-        if: ${{ matrix.platform == 'linux' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
+      - name: Build Godot
+        if: ${{steps.godot-template-cache.outputs.cache-hit != 'true' }}
         run: |
-          godot --help
-          cd godot
-          scons p=linuxbsd arch=x86_64 optimize=speed ${BUILD_OPTIONS}
-          mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
-          mv ./bin/godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/linux_release.x86_64
-      - name: Build Godot (Windows)
-        if: ${{ matrix.platform == 'windows' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
-        run: |
-          godot --help
-          cd godot
-          ls ../angle_libs
-          scons p=windows use_mingw=yes arch=x86_64 angle_libs=../angle_libs ${BUILD_OPTIONS}
-          mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
-          mv ./bin/godot.windows.template_release.x86_64.exe ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
-      - name: Build Godot (macOS)
-        if: ${{ matrix.platform == 'macos' && steps.godot-template-cache.outputs.cache-hit != 'true' }}
-        run: |
-          godot --help
-          cd godot
-          scons p=macos arch=arm64 optimize=speed ${BUILD_OPTIONS}
-          scons p=macos arch=x86_64 optimize=speed ${BUILD_OPTIONS}
-          cd bin
-          lipo -create godot.macos.template_release.x86_64 godot.macos.template_release.arm64 -output godot.macos.template_release.universal
-          chmod +x *
-          mv godot.macos.template_release.universal "/Users/runner/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}"
+          godot --help # Make sure godot command is available before wasting time building the template (Workflow would fail later and not cache it).
+          pushd godot
+          if ["${{ matrix.platform }}" = "linux"]; then
+            scons p=linuxbsd arch=x86_64 optimize=speed ${BUILD_OPTIONS}
+            mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
+            mv ./bin/godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/linux_release.x86_64
+          elif ["${{ matrix.platform }}" = "windows"]; then
+            scons p=windows use_mingw=yes arch=x86_64 ${BUILD_OPTIONS}
+            mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
+            mv ./bin/godot.windows.template_release.x86_64.exe ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
+          elif ["${{ matrix.platform }}" = "macos"]; then
+            scons p=macos arch=arm64 optimize=speed ${BUILD_OPTIONS}
+            scons p=macos arch=x86_64 optimize=speed ${BUILD_OPTIONS}
+            # TODO: Properly package this
+            pushd bin
+            lipo -create godot.macos.template_release.x86_64 godot.macos.template_release.arm64 -output godot.macos.template_release.universal
+            chmod +x *
+            mv godot.macos.template_release.universal "/Users/runner/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}"
+            popd
+          fi
+          popd
       - name: Export project
         run: |
           cd godsvg
-          ls ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
           mkdir -v -p build
           godot --headless --export-release "${{ matrix.preset }}" build/${{ matrix.artifact }}
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
