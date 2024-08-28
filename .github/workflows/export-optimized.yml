@@ -116,7 +116,7 @@ jobs:
             mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
             mv ./bin/godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/linux_release.x86_64
           elif ["${{ matrix.platform }}" = "windows"]; then
-            scons p=windows use_mingw=yes arch=x86_64 ${BUILD_OPTIONS}
+            scons p=windows arch=x86_64 ${BUILD_OPTIONS}
             mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
             mv ./bin/godot.windows.template_release.x86_64.exe ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
           elif ["${{ matrix.platform }}" = "macos"]; then
