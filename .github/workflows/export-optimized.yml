@@ -191,9 +191,9 @@ jobs:
           mkdir -p macos_template.app/Contents/MacOS
           cp godot.macos.template_release.universal macos_template.app/Contents/MacOS/godot_macos_release.universal;
           chmod +x macos_template.app/Contents/MacOS/godot_macos*;
-          zip -q -9 -r godot_template_macos.zip macos_template.app;
+          zip -q -9 -r macos.zip macos_template.app;
           mkdir -v -p "/Users/runner/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}"
-          mv godot_template_macos.zip "/Users/runner/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}"
+          mv macos.zip "/Users/runner/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}"
 
       - name: Export project
         run: |
