@@ -3,7 +3,7 @@ name: dev-desktop-test
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, revork-workflows ]
   pull_request:
     branches: [ main ]
 
