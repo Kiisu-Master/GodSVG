@@ -169,9 +169,9 @@ jobs:
 
       - name: Build Godot template for macOS (arm64 release)
         run: |
+          godot --help
           cd godot
           scons p=macos arch=arm64 ${BUILD_OPTIONS}
-          mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
 
       - name: Build Godot template for macOS (x86_64 release)
         run: |
