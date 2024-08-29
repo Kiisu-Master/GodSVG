@@ -1,151 +1,210 @@
-name: export-optimized
+name: dev-desktop-test
+
 on:
-  push: 
-    branches: [rework-workflows]
+  workflow_dispatch:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch: 
+
 env:
+  # Which godot version to use for exporting.
   GODOT_VERSION: 4.3
-  GODOT_FEATURE_VERSION: 4.3
+  # Which godot release to use for exporting. (stable/rc/beta/alpha)
   GODOT_RELEASE: stable
-  PROJECT_NAME: GodSVG
-  GODOT_REPO: godotengine/godot
+  # Used in the editor config file name. Do not change this for patch releases.
+  GODOT_FEATURE_VERSION: 4.3
+  # Commit hash
   GODOT_COMMIT_HASH: 77dcf97
+  PROJECT_NAME: GodSVG
+  GODOT_REPO: https://github.com/godotengine/godot.git
   BUILD_OPTIONS: target=template_release lto=full production=yes deprecated=no minizip=no brotli=no vulkan=no openxr=no use_volk=no disable_3d=yes modules_enabled_by_default=no module_freetype_enabled=yes module_gdscript_enabled=yes module_svg_enabled=yes module_jpg_enabled=yes module_text_server_adv_enabled=yes graphite=no module_webp_enabled=yes
+
 jobs:
-  build-and-export:
-    name: Build and Export for ${{ matrix.platform }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - platform: linux
-            os: ubuntu-latest
-            preset: "Linux/X11"
-            artifact: GodSVG.x86_64
-          - platform: windows
-            os: ubuntu-latest
-            preset: "Windows Desktop"
-            artifact: GodSVG.exe
-          # - platform: macos
-          #   os: macos-latest
-          #   preset: "macOS"
-          #   artifact: GodSVG.zip
-    
+  build-linux:
+    name: Export GodSVG for Linux
+    runs-on: ubuntu-latest
+    env:
+      PLATFORM: "Linux/X11"
+      EXTENSION: "exe"
+      BUILD_NAME: "linux-64bit"
     steps:
+      - name: Set up Godot Editor
+        run: |
+          mkdir -v -p ~/godot-editor
+          cd ~/godot-editor
+          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
+          unzip Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
+          mv ./Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64 ~/godot-editor/godot
+          echo "~/godot-editor" >> $GITHUB_PATH
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           path: godsvg
-      - name: Set up Godot editor
+
+      - name: Install dependencies
+        run: sudo apt install -y scons python3
+
+      - name: Clone Godot repository
+        run: git clone $GODOT_REPO godot
+
+      - name: Checkout specific commit
+        run: |
+          cd godot
+          git fetch
+          git checkout $GODOT_COMMIT_HASH
+
+      - name: Build Godot template for Linux
+        run: |
+          cd godot
+          scons p=linuxbsd arch=x86_64 ${BUILD_OPTIONS}
+          mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
+          mv ./bin/godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/linux_release.x86_64
+
+      - name: Export project
+        run: |
+          ls -l
+          cd godsvg
+          mkdir -v -p build
+          godot --headless --export-release "Linux/X11" build/GodSVG.x86_64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PROJECT_NAME }}-linux
+          path: godsvg/build/GodSVG.x86_64
+          if-no-files-found: error
+          retention-days: 28
+
+  build-windows:
+    name: Export GodSVG for Windows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Godot Editor
         run: |
           mkdir -v -p ~/godot-editor
           cd ~/godot-editor
-          if [ $RUNNER_OS == 'Linux' ]; then
-            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
-            unzip Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
-            mv ./Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64 ~/godot-editor/godot
-            echo "~/godot-editor" >> $GITHUB_PATH
+          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
+          unzip Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip
+          mv ./Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64 ~/godot-editor/godot
+          echo "~/godot-editor" >> $GITHUB_PATH
 
-          elif [ $RUNNER_OS == 'macOS' ]; then
-            # TODO: Does this even work? (Never tested)
-            wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
-            unzip -a Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
-            echo "~/godot-editor/Godot.app/Contents/MacOS" >> $GITHUB_PATH
-          fi
-      - name: Install dependencies
-        run: |
-          if [ "${{ matrix.platform }}" == 'macos' ]; then
-            brew install scons
-          fi
-
-          if [ '${{ matrix.platform }}' == 'windows' ] || [ '${{ matrix.platform }}' == 'linux' ]; then
-            sudo apt update
-            sudo apt install -y scons python3
-          fi
-
-          if [ '${{ matrix.platform }}' == 'windows' ]; then
-            sudo apt install -y g++-mingw-w64-x86-64-posix
-            sudo apt install -y --fix-missing wine64
-            wget -q https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe
-            mkdir -v -p ~/.local/share/rcedit
-            mv rcedit-x64.exe ~/.local/share/rcedit
-            godot --headless --quit
-            echo 'export/windows/wine = "/usr/bin/wine64"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
-            echo 'export/windows/rcedit = "/home/runner/.local/share/rcedit/rcedit-x64.exe"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
-          fi
-
-          # TODO: Compile with angle libs
-          # if [ '${{ matrix.platform }}' == 'windows' ] || [ '${{ matrix.platform }}' == 'macos' ]; then
-          #   mkdir -p angle_libs
-          #   pushd angle_libs
-          #   base_url=https://github.com/godotengine/godot-angle-static/releases/download/chromium%2F6601.2/godot-angle-static
-          #   curl -L -o windows_arm64.zip $base_url-arm64-llvm-release.zip
-          #   curl -L -o windows_x86_64.zip $base_url-x86_64-gcc-release.zip
-          #   curl -L -o windows_x86_32.zip $base_url-x86_32-gcc-release.zip
-          #   curl -L -o macos_arm64.zip $base_url-arm64-macos-release.zip
-          #   curl -L -o macos_x86_64.zip $base_url-x86_64-macos-release.zip
-          #   unzip -o windows_arm64.zip && rm -f windows_arm64.zip
-          #   unzip -o windows_x86_64.zip && rm -f windows_x86_64.zip
-          #   unzip -o windows_x86_32.zip && rm -f windows_x86_32.zip
-          #   unzip -o macos_arm64.zip && rm -f macos_arm64.zip
-          #   unzip -o macos_x86_64.zip && rm -f macos_x86_64.zip
-          #   popd
-          # fi
-      - name: Use cached export template
-        id: godot-template-cache
-        uses:
-          actions/cache@v4
-        with:
-          key: ${{ env.GODOT_COMMIT_HASH }}-${{ matrix.platform}}-${{ env.BUILD_OPTIONS }}
-          path: |
-            ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.${{ env.GODOT_RELEASE }}
-      - name: Get Godot source
-        if: ${{ steps.godot-template-cache.outputs.cache-hit != 'true' }}
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.GODOT_REPO }}
-          # TODO: Commit hash doesn't work so temporarily using 4.3 tag to fetch.
-          ref: ${{ env.GODOT_VERSION }}
-          path: godot
-      - name: Build Godot
-        if: ${{steps.godot-template-cache.outputs.cache-hit != 'true' }}
+          path: godsvg
+
+      - name: Install dependencies
         run: |
-          godot --help # Make sure godot command is available before wasting time building the template (Workflow would fail later and not cache it).
-          pushd godot
+          sudo apt install -y scons python3
+          sudo apt install -y g++-mingw-w64-x86-64-posix
+          sudo apt install -y --fix-missing wine64
+          wget -q https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe
+          mkdir -v -p ~/.local/share/rcedit
+          mv rcedit-x64.exe ~/.local/share/rcedit
+          godot --headless --quit
+          echo 'export/windows/wine = "/usr/bin/wine64"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
+          echo 'export/windows/rcedit = "/home/runner/.local/share/rcedit/rcedit-x64.exe"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
 
-          if [ '${{ matrix.platform }}' == 'linux' ]; then
-            scons p=linuxbsd arch=x86_64 optimize=speed ${BUILD_OPTIONS}
-            mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
-            mv ./bin/godot.linuxbsd.template_release.x86_64 ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/linux_release.x86_64
+      - name: Clone Godot repository
+        run: git clone $GODOT_REPO godot
 
-          elif [ '${{ matrix.platform }}' == 'windows' ]; then
-            scons p=windows arch=x86_64 ${BUILD_OPTIONS}
-            mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
-            mv ./bin/godot.windows.template_release.x86_64.exe ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
+      - name: Checkout specific commit
+        run: |
+          cd godot
+          git fetch
+          git checkout $GODOT_COMMIT_HASH
 
-          elif [ '${{ matrix.platform }}' == 'macos' ]; then
-            scons p=macos arch=arm64 optimize=speed ${BUILD_OPTIONS}
-            scons p=macos arch=x86_64 optimize=speed ${BUILD_OPTIONS}
-            # TODO: Properly package this
-            pushd bin
-            lipo -create godot.macos.template_release.x86_64 godot.macos.template_release.arm64 -output godot.macos.template_release.universal
-            chmod +x *
-            mv godot.macos.template_release.universal "/Users/runner/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}"
-            popd
-          fi
+      - name: Build Godot template for Windows
+        run: |
+          apt search mingw
+          cd godot
+          scons p=windows ${BUILD_OPTIONS}
+          mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
+          mv ./bin/godot.windows.template_release.x86_64.exe ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/windows_release_x86_64.exe
 
-          popd
       - name: Export project
         run: |
           cd godsvg
           mkdir -v -p build
-          godot --headless --export-release "${{ matrix.preset }}" build/${{ matrix.artifact }}
+          godot --headless --export-release "Windows Desktop" build/GodSVG.exe
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.PROJECT_NAME }}-${{ matrix.platform }}
-          path: godsvg/build/${{ matrix.artifact }}
+          name: ${{ env.PROJECT_NAME }}-windows
+          path: godsvg/build/GodSVG.exe
+          if-no-files-found: error
+          retention-days: 28
+
+  build-macos:
+    name: Export GodSVG for MacOS
+    runs-on: macos-latest
+    steps:
+      - name: Set up Godot Editor
+        run: |
+          mkdir -v -p ~/godot-editor
+          cd ~/godot-editor
+          wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
+          unzip -a Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_macos.universal.zip
+          echo "~/godot-editor/Godot.app/Contents/MacOS" >> $GITHUB_PATH
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: godsvg
+
+      - name: Install dependencies
+        run: brew install scons
+
+      - name: Clone Godot repository
+        run: git clone $GODOT_REPO godot
+
+      - name: Checkout specific commit
+        run: |
+          cd godot
+          git fetch
+          git checkout $GODOT_COMMIT_HASH
+
+      - name: Build Godot template for macOS (arm64 release)
+        run: |
+          cd godot
+          scons p=macos arch=arm64 ${BUILD_OPTIONS}
+          mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/
+
+      - name: Build Godot template for macOS (x86_64 release)
+        run: |
+          cd godot
+          scons p=macos arch=x86_64 ${BUILD_OPTIONS}
+
+      - name: Combine binaries with lipo
+        run: |
+          cd godot/bin
+          lipo -create godot.macos.template_release.x86_64 godot.macos.template_release.arm64 -output godot.macos.template_release.universal
+          chmod +x *
+          
+      - name: Prepare .app bundle
+        run: |
+          cd godot/bin
+          cp -r ../misc/dist/macos_template.app .
+          mkdir -p macos_template.app/Contents/MacOS
+          cp godot.macos.template_release.universal macos_template.app/Contents/MacOS/godot_macos_release.universal;
+          chmod +x macos_template.app/Contents/MacOS/godot_macos*;
+          zip -q -9 -r godot_template_macos.zip macos_template.app;
+          mkdir -v -p "/Users/runner/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}"
+          mv godot_template_macos.zip "/Users/runner/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}"
+
+      - name: Export project
+        run: |
+          cd godsvg
+          mkdir -v -p build
+          godot --headless --export-release "macOS" build/GodSVG.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PROJECT_NAME }}-macos
+          path: godsvg/build/GodSVG.zip
           if-no-files-found: error
           retention-days: 28
