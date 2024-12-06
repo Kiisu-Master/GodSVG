@@ -123,7 +123,7 @@ jobs:
           echo 'export/windows/wine = "/usr/bin/wine64"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
           echo 'export/windows/rcedit = "/home/runner/.local/share/rcedit/rcedit-x64.exe"' >> ~/.config/godot/editor_settings-${GODOT_FEATURE_VERSION}.tres
           
-          mkdir ~/deps/angle
+          mkdir -p ~/deps/angle
           pushd ~/deps/angle
           curl -L -o windows_x86_64.zip ${ANGLE_DOWNLOAD_BASE}-x86_64-gcc-release.zip
           unzip -o windows_x86_64.zip && rm -f windows_x86_64.zip
