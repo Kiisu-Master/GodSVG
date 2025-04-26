@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://cxmrx6t4jkhyj"]
+[gd_scene load_steps=11 format=3 uid="uid://cxmrx6t4jkhyj"]
 
 [ext_resource type="Script" uid="uid://cgbgw4ok5jxk5" path="res://src/ui_parts/global_actions.gd" id="1_x4rqo"]
 [ext_resource type="Texture2D" uid="uid://ccbta5q43jobk" path="res://assets/icons/More.svg" id="2_71075"]
@@ -9,6 +9,7 @@
 [ext_resource type="FontFile" uid="uid://dc0w4sx0h0fui" path="res://assets/fonts/FontBold.ttf" id="4_xl5uh"]
 [ext_resource type="Script" uid="uid://41g64ussxcbn" path="res://src/ui_parts/current_file_button.gd" id="5_14xct"]
 [ext_resource type="Texture2D" uid="uid://b6mqp088ef65" path="res://assets/icons/Layouts.svg" id="5_tx4gi"]
+[ext_resource type="Texture2D" uid="uid://ccvjkdd0s7rb4" path="res://assets/icons/Copy.svg" id="10_476kv"]
 
 [node name="GlobalActions" type="HBoxContainer"]
 offset_right = 52.0
@@ -83,4 +84,14 @@ theme_type_variation = &"IconButton"
 icon = ExtResource("3_4ckhj")
 script = ExtResource("4_f81d5")
 action = "export"
+metadata/_custom_type_script = "uid://ynx3s1jc6bwq"
+
+[node name="CopyImageButton" type="Button" parent="RightSide"]
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_type_variation = &"IconButton"
+icon = ExtResource("10_476kv")
+script = ExtResource("4_f81d5")
+action = "copy_image"
 metadata/_custom_type_script = "uid://ynx3s1jc6bwq"

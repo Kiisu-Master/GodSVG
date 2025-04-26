@@ -5,3 +5,6 @@
 # Others
 .~lock.*
 .DS_Store
+
+# Rust
+/ext/target

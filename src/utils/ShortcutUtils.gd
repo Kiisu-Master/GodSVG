@@ -11,7 +11,7 @@ const EFFECT_ACTIONS: PackedStringArray = ["view_show_grid", "view_show_handles"
 		"load_reference", "toggle_snap"]
 
 # Requires there being no popups either.
-const EDITOR_ACTIONS: PackedStringArray = ["import", "export", "save", "save_as",
+const EDITOR_ACTIONS: PackedStringArray = ["import", "export", "copy_image", "save", "save_as",
 		"close_tab", "close_tabs_to_left", "close_tabs_to_right", "close_all_other_tabs",
 		"new_tab", "select_next_tab", "select_previous_tab", "copy_svg_text", "optimize",
 		"reset_svg", "debug"]
@@ -26,6 +26,7 @@ const _action_categories_dict: Dictionary[String, Dictionary] = {
 	"file": {
 		"import": true,
 		"export": true,
+		"copy_image": true,
 		"save": true,
 		"save_as": true,
 		"close_tab": true,

@@ -261,6 +261,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			match action:
 				"import": FileUtils.open_svg_import_dialog()
 				"export": open_export()
+				"copy_image":
+					var ext = Ext.new()
+					var img := Image.new()
+					var export_svg := State.root_element.duplicate()
+					img.load_svg_from_string(SVGParser.root_to_export_text(export_svg))
+					img.fix_alpha_edges()
+					print(ext.clip_set_image(img))
 				"save": FileUtils.save_svg()
 				"save_as": FileUtils.save_svg_as()
 				"close_tab": FileUtils.close_tabs(Configs.savedata.get_active_tab_index())

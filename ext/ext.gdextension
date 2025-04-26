@@ -1,0 +1,14 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.1
+reloadable = true
+
+[libraries]
+# linux.debug.x86_64 =     "res://../ext/target/debug/libext.so"
+# linux.release.x86_64 =   "res://../ext/target/release/libext.so"
+windows.debug.x86_64 =   "res://./ext/target/debug/ext.dll"
+windows.release.x86_64 = "res://./ext/target/release/ext.dll"
+# macos.debug =            "res://../ext/target/debug/libext.dylib"
+# macos.release =          "res://../ext/target/release/libext.dylib"
+# macos.debug.arm64 =      "res://../ext/target/debug/libext.dylib"
+# macos.release.arm64 =    "res://../ext/target/release/libext.dylib"
