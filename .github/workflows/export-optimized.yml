@@ -15,7 +15,7 @@ env:
   # Used in the editor config file name (e.g., 4.4, 4.5, but NOT 4.4.1)
   GODOT_FEATURE_VERSION: 4.5
   # Commit hash
-  GODOT_COMMIT_HASH: d4d35ae7d1051309964d71ea254d041db4aedc67
+  GODOT_COMMIT_HASH: 64b09905c7b2877f8aef99d8b63e73e5d31acfb9
   PROJECT_NAME: GodSVG
   # deprecated=no disables deprecated Godot features, which exist for compat and we don't use.
   # vulkan=no, use_volk=no since we use Compatibility Renderer. TODO for 4.5 disable rendering_device too.
